@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#163a36">
+  <meta name="description" content="เกมจำลองชีวิตภาษาไทย กลิ่นอายเกมมือถือปุ่มกดยุค Java — เดินเมือง ทำกิจวัตร และดูแลความต้องการให้สมดุล">
+  <meta property="og:title" content="ชีวิตเมือง — วันของเรา">
+  <meta property="og:description" content="เกมจำลองชีวิตพิกเซลภาษาไทย เล่นได้ในเบราว์เซอร์">
+  <meta property="og:image" content="assets/og.png">
+  <meta property="og:type" content="website">
+  <link rel="icon" type="image/png" href="assets/favicon.png">
+  <link rel="stylesheet" href="style.css">
+  <title>ชีวิตเมือง — วันของเรา</title>
+</head>
+<body>
+  <main class="app" id="app">
+    <header class="masthead">
+      <div class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+      <div>
+        <p class="eyebrow">เกมจำลองชีวิต · พิกเซลคลาสสิก</p>
+        <h1>ชีวิตเมือง <span>— วันของเรา</span></h1>
+      </div>
+      <div class="date-chip"><span class="led"></span><span>วันใหม่</span></div>
+    </header>
+
+    <section class="game-layout" aria-label="เกมชีวิตเมือง">
+      <section class="console-card">
+        <div class="screen-head">
+          <span>เมืองเล็ก ๆ ของเรา</span>
+          <span class="clock-readout" id="clock">07:00</span>
+        </div>
+        <div class="screen-wrap">
+          <canvas id="world" width="384" height="288" aria-label="แผนที่เมือง ใช้ปุ่มลูกศรหรือ WASD เพื่อเดิน"></canvas>
+          <div class="screen-overlay" id="overlay" aria-live="polite">
+            <div class="overlay-card" id="overlay-card">
+              <p class="overlay-kicker">วันของเรา · 01</p>
+              <h2 id="overlay-title">เช้าวันใหม่ในเมือง</h2>
+              <p id="overlay-copy">ออกไปใช้ชีวิต ทำกิจวัตร และรักษาความต้องการให้สมดุลก่อนค่ำ</p>
+              <div class="overlay-stat" id="overlay-stat"></div>
+              <button class="primary-button" id="overlay-button">เริ่มใช้ชีวิต</button>
+              <p class="overlay-foot" id="overlay-foot">เดินด้วยปุ่มลูกศร · ยืนยันกิจกรรมด้วย Enter</p>
+            </div>
+          </div>
+          <div class="map-stamp" aria-hidden="true">เมือง<br>01</div>
+        </div>
+        <div class="screen-foot">
+          <span id="location-status">พร้อมเริ่มวัน</span>
+          <button class="pause-button" id="pause-button" type="button" aria-label="พักเกม">พักเกม <kbd>Esc</kbd></button>
+        </div>
+      </section>
+
+      <aside class="dashboard">
+        <section class="panel day-panel">
+          <div class="panel-title"><span class="panel-dot"></span><h2>วันนี้</h2></div>
+          <div class="goal">ใช้ชีวิตให้สมดุลก่อน <strong>22:00</strong></div>
+          <div class="money-row"><span>เงินติดตัว</span><strong id="money">฿120</strong></div>
+          <div class="day-progress"><span id="day-progress"></span></div>
+          <div class="time-labels"><span>07:00</span><span>22:00</span></div>
+        </section>
+
+        <section class="panel needs-panel">
+          <div class="panel-title"><span class="panel-dot coral"></span><h2>ความต้องการ</h2></div>
+          <div class="need-row" data-need="hunger"><div class="need-label"><span>ความหิว</span><b>0%</b></div><div class="meter"><span></span></div></div>
+          <div class="need-row" data-need="energy"><div class="need-label"><span>พลังงาน</span><b>0%</b></div><div class="meter"><span></span></div></div>
+          <div class="need-row" data-need="hygiene"><div class="need-label"><span>ความสะอาด</span><b>0%</b></div><div class="meter"><span></span></div></div>
+          <div class="need-row" data-need="fun"><div class="need-label"><span>ความสุข</span><b>0%</b></div><div class="meter"><span></span></div></div>
+          <div class="need-row" data-need="social"><div class="need-label"><span>ความสัมพันธ์</span><b>0%</b></div><div class="meter"><span></span></div></div>
+        </section>
+
+        <section class="panel action-panel">
+          <div class="panel-title"><span class="panel-dot gold"></span><h2 id="action-title">กิจกรรมใกล้ตัว</h2></div>
+          <p class="action-hint" id="action-hint">เดินเข้าใกล้บ้าน คาเฟ่ ร้านค้า หรือสวน แล้วกด Enter</p>
+          <div class="action-list" id="action-list"></div>
+        </section>
+
+        <section class="control-panel" aria-label="ปุ่มควบคุม">
+          <div class="dpad" aria-label="ปุ่มทิศทาง">
+            <span></span><button type="button" data-key="ArrowUp" aria-label="เดินขึ้น">▲</button><span></span>
+            <button type="button" data-key="ArrowLeft" aria-label="เดินซ้าย">◀</button><span class="dpad-center">+</span><button type="button" data-key="ArrowRight" aria-label="เดินขวา">▶</button>
+            <span></span><button type="button" data-key="ArrowDown" aria-label="เดินลง">▼</button><span></span>
+          </div>
+          <div class="control-copy"><strong>ปุ่มกด</strong><span>ลูกศร / WASD เดิน</span><span>Enter ทำกิจกรรม</span><span>Esc พักเกม</span></div>
+        </section>
+      </aside>
+    </section>
+
+    <footer class="footer-note"><span>เกมเล่นคนเดียว · ทำงานได้โดยไม่ต้องเชื่อมต่อบัญชี</span><span>บันทึกในเครื่องไม่จำเป็น — เริ่มวันใหม่ได้เสมอ</span></footer>
+  </main>
+  <script src="game.js" defer></script>
+</body>
+</html>
