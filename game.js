@@ -46,7 +46,7 @@
     { id: 'home', name: 'บ้าน', x: 62, y: 178, actions: ['rest', 'shower'] },
     { id: 'park', name: 'สวน', x: 308, y: 178, actions: ['chat', 'read'] }
   ];
-  const state = { mode: 'title', time: START, money: 120, actions: 0, needs: { hunger: 69, energy: 74, hygiene: 68, fun: 62, social: 55 }, player: { x: 190, y: 151, facing: 'down' }, nearby: null, target: null, autoInteract: null, lastHud: 0, lastFrame: 0 };
+  const state = { mode: 'title', time: START, money: 120, actions: 0, needs: { hunger: 69, energy: 74, hygiene: 68, fun: 62, social: 55 }, player: { x: 190, y: 151, facing: 'down' }, nearby: null, target: null, autoInteract: null, statusMessage: '', statusUntil: 0, lastHud: 0, lastFrame: 0 };
   const needNames = { hunger: 'ความหิว', energy: 'พลังงาน', hygiene: 'ความสะอาด', fun: 'ความสุข', social: 'ความสัมพันธ์' };
 
   function clamp(value, min = 0, max = 100) { return Math.max(min, Math.min(max, value)); }
@@ -59,6 +59,10 @@
   function formatTime(minutes) {
     const h = Math.floor(minutes / 60), m = Math.floor(minutes % 60);
     return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+  }
+  function setStatus(text, duration = 2400) {
+    state.statusMessage = text; state.statusUntil = performance.now() + duration;
+    locationStatus.textContent = text;
   }
   function showOverlay(mode) {
     state.mode = mode;
@@ -182,6 +186,7 @@
       row.setAttribute('aria-label', `${needNames[key]} ${percent}%`);
     }
     if (state.mode !== 'playing') locationStatus.textContent = state.mode === 'title' ? 'พร้อมเริ่มวัน' : state.mode === 'paused' ? 'พักเกมอยู่' : 'หมดวันแล้ว';
+    else if (state.statusUntil > performance.now()) locationStatus.textContent = state.statusMessage;
     else locationStatus.textContent = state.nearby ? `ใกล้${state.nearby.name} · แตะยืนยันเพื่อทำกิจกรรม` : 'เดินสำรวจเมืองเพื่อหากิจกรรม';
   }
   function updateActionPanel() {
@@ -216,14 +221,14 @@
     state.money = Math.max(0, state.money + activity.money);
     for (const [key, amount] of Object.entries(activity.needs)) state.needs[key] = clamp(state.needs[key] + amount);
     state.actions++;
-    locationStatus.textContent = `${activity.note} · ${formatTime(state.time)}`;
+    setStatus(`${activity.note} · ${formatTime(state.time)}`);
     renderHud(true);
     if (state.time >= END) { finishDay(); return; }
   }
   function interact() {
     if (state.mode !== 'playing') return;
     const place = currentPlace();
-    if (!place) { locationStatus.textContent = 'เดินเข้าใกล้บ้าน คาเฟ่ ร้านค้า หรือสวนก่อน'; return; }
+    if (!place) { setStatus('เดินเข้าใกล้บ้าน คาเฟ่ ร้านค้า หรือสวนก่อน'); return; }
     const choice = place.actions[0]; perform(choice);
   }
   function onWorldTap(event) {
@@ -236,7 +241,7 @@
     state.target = destination ? { x: destination.x, y: destination.y } : { x, y };
     state.autoInteract = destination ? destination.id : null;
     held.clear();
-    locationStatus.textContent = destination ? `กำลังเดินไป${destination.name}` : 'กำลังเดินไปตำแหน่งที่แตะ';
+    setStatus(destination ? `กำลังเดินไป${destination.name}` : 'กำลังเดินไปตำแหน่งที่แตะ', 1200);
   }
   function onKeyDown(event) {
     const key = event.key.length === 1 ? event.key.toLowerCase() : event.key;
