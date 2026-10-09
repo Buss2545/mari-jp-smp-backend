@@ -46,7 +46,7 @@
     { id: 'home', name: 'บ้าน', x: 62, y: 178, actions: ['rest', 'shower'] },
     { id: 'park', name: 'สวน', x: 308, y: 178, actions: ['chat', 'read'] }
   ];
-  const state = { mode: 'title', time: START, money: 120, actions: 0, needs: { hunger: 69, energy: 74, hygiene: 68, fun: 62, social: 55 }, player: { x: 190, y: 151, facing: 'down' }, nearby: null, lastHud: 0, lastFrame: 0 };
+  const state = { mode: 'title', time: START, money: 120, actions: 0, needs: { hunger: 69, energy: 74, hygiene: 68, fun: 62, social: 55 }, player: { x: 190, y: 151, facing: 'down' }, nearby: null, target: null, autoInteract: null, lastHud: 0, lastFrame: 0 };
   const needNames = { hunger: 'ความหิว', energy: 'พลังงาน', hygiene: 'ความสะอาด', fun: 'ความสุข', social: 'ความสัมพันธ์' };
 
   function clamp(value, min = 0, max = 100) { return Math.max(min, Math.min(max, value)); }
@@ -65,7 +65,7 @@
     overlay.classList.remove('hidden');
     if (mode === 'title') {
       overlayTitle.textContent = 'เช้าวันใหม่ในเมือง';
-      overlayCopy.textContent = 'ออกไปใช้ชีวิต ทำกิจวัตร และรักษาความต้องการให้สมดุลก่อนค่ำ';
+      overlayCopy.textContent = 'แตะจุดกิจกรรมบนแผนที่เพื่อเดินไปทำได้ทันที หรือใช้ปุ่มทิศทางที่มุมล่าง';
       overlayStat.textContent = '';
       overlayButton.textContent = 'เริ่มใช้ชีวิต';
       overlayFoot.textContent = 'แตะปุ่มทิศทางหรือใช้ลูกศรเดิน · แตะยืนยันเพื่อทำกิจกรรม';
@@ -92,7 +92,7 @@
     state.time = START; state.money = 120; state.actions = 0;
     state.needs = { hunger: 69, energy: 74, hygiene: 68, fun: 62, social: 55 };
     state.player = { x: 190, y: 151, facing: 'down' };
-    state.nearby = null; held.clear(); state.mode = 'playing'; hideOverlay(); renderHud(true); updateActionPanel();
+    state.nearby = null; state.target = null; state.autoInteract = null; held.clear(); state.mode = 'playing'; hideOverlay(); renderHud(true); updateActionPanel();
   }
   function resumeDay() { state.mode = 'playing'; held.clear(); hideOverlay(); }
   function pauseDay() { if (state.mode === 'playing') showOverlay('paused'); else if (state.mode === 'paused') resumeDay(); }
@@ -103,6 +103,14 @@
     if (held.has('ArrowRight') || held.has('d')) dx++;
     if (held.has('ArrowUp') || held.has('w')) dy--;
     if (held.has('ArrowDown') || held.has('s')) dy++;
+    const manual = dx !== 0 || dy !== 0;
+    if (manual) { state.target = null; state.autoInteract = null; }
+    else if (state.target) {
+      dx = state.target.x - state.player.x; dy = state.target.y - state.player.y;
+      const remaining = Math.hypot(dx, dy);
+      if (remaining < 2) { state.target = null; return; }
+      dx /= remaining; dy /= remaining;
+    }
     if (!dx && !dy) return;
     const mag = Math.hypot(dx, dy); dx /= mag; dy /= mag;
     if (Math.abs(dx) > Math.abs(dy)) state.player.facing = dx < 0 ? 'left' : 'right';
@@ -113,6 +121,7 @@
     const blocked = (px, py) => (px < 140 && py < 91) || (px > 244 && py < 91) || (px < 133 && py > 198);
     if (!blocked(x, state.player.y)) state.player.x = x;
     if (!blocked(state.player.x, y)) state.player.y = y;
+    if (state.target && distance(state.player, state.target) < 3) state.target = null;
   }
   function update(dt, now) {
     if (state.mode !== 'playing') return;
@@ -127,6 +136,9 @@
     if (state.time >= END) { finishDay(); return; }
     const place = currentPlace();
     if ((place && place.id) !== (state.nearby && state.nearby.id)) { state.nearby = place; updateActionPanel(); }
+    if (state.autoInteract && place && place.id === state.autoInteract) {
+      state.autoInteract = null; state.target = null; perform(place.actions[0]);
+    }
     if (now - state.lastHud > 250) { renderHud(); state.lastHud = now; }
   }
   function drawLabel(text, x, y) {
@@ -214,12 +226,24 @@
     if (!place) { locationStatus.textContent = 'เดินเข้าใกล้บ้าน คาเฟ่ ร้านค้า หรือสวนก่อน'; return; }
     const choice = place.actions[0]; perform(choice);
   }
+  function onWorldTap(event) {
+    if (state.mode !== 'playing') return;
+    const point = event.changedTouches ? event.changedTouches[0] : event;
+    const rect = canvas.getBoundingClientRect();
+    const x = clamp((point.clientX - rect.left) / rect.width * W, 12, W - 12);
+    const y = clamp((point.clientY - rect.top) / rect.height * H, 18, H - 15);
+    const destination = places.find(place => distance({ x, y }, place) < 26);
+    state.target = destination ? { x: destination.x, y: destination.y } : { x, y };
+    state.autoInteract = destination ? destination.id : null;
+    held.clear();
+    locationStatus.textContent = destination ? `กำลังเดินไป${destination.name}` : 'กำลังเดินไปตำแหน่งที่แตะ';
+  }
   function onKeyDown(event) {
     const key = event.key.length === 1 ? event.key.toLowerCase() : event.key;
     if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(event.key)) event.preventDefault();
     if (event.key === 'Escape') { pauseDay(); return; }
     if (state.mode !== 'playing') { if (event.key === 'Enter' && state.mode === 'title') startDay(); else if (event.key === 'Enter' && state.mode === 'paused') resumeDay(); return; }
-    if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','w','a','s','d'].includes(key)) held.add(key);
+    if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','w','a','s','d'].includes(key)) { held.add(key); state.target = null; state.autoInteract = null; }
     else if (event.key === 'Enter' || event.key === ' ') interact();
     else if (event.key === '1' || event.key === '2') {
       const place = currentPlace(); if (place) { const id = place.actions[Number(event.key) - 1]; if (id) perform(id); }
@@ -229,9 +253,11 @@
   window.addEventListener('keydown', onKeyDown); window.addEventListener('keyup', onKeyUp); window.addEventListener('blur', () => held.clear());
   pauseButton.addEventListener('click', pauseDay);
   if (touchInteractButton) touchInteractButton.addEventListener('click', interact);
+  canvas.addEventListener('pointerdown', onWorldTap);
+  if (!('PointerEvent' in window)) canvas.addEventListener('touchstart', onWorldTap, { passive: false });
   for (const button of document.querySelectorAll('.dpad button[data-key]')) {
     const key = button.dataset.key;
-    const down = (event) => { event.preventDefault(); held.add(key); button.classList.add('held'); if (button.setPointerCapture) button.setPointerCapture(event.pointerId); };
+    const down = (event) => { event.preventDefault(); state.target = null; state.autoInteract = null; held.add(key); if (state.mode === 'playing') move(0.18); button.classList.add('held'); if (button.setPointerCapture) button.setPointerCapture(event.pointerId); };
     const up = () => { held.delete(key); button.classList.remove('held'); };
     button.addEventListener('pointerdown', down); button.addEventListener('pointerup', up); button.addEventListener('pointercancel', up); button.addEventListener('lostpointercapture', up);
   }

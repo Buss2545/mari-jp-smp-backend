@@ -19,3 +19,8 @@ button:focus-visible{outline:3px solid #f0bc5a;outline-offset:2px}#world:focus-v
 .touch-interact:active{transform:translateY(2px);box-shadow:0 1px 0 #552f26}
 @media(max-width:680px){body{padding:calc(10px + env(safe-area-inset-top)) 9px calc(16px + env(safe-area-inset-bottom))}.touch-controls{display:block}.control-panel .dpad{display:none}.control-panel{padding:8px 11px;min-height:52px}.control-copy{font-size:10px}.control-copy strong{font-size:12px}.action-button{min-height:44px;padding:8px 9px;font-size:11px}.pause-button{min-height:36px;padding:7px 10px}.screen-wrap{border-width:3px}.screen-head,.screen-foot{touch-action:pan-y}}
 @media(hover:none) and (pointer:coarse){.touch-controls{display:block}.control-panel .dpad{display:none}.action-button{min-height:44px}.touch-dpad button{width:46px;height:44px}}
+
+/* Direct map tapping is the primary phone input; keep the canvas out of browser pan gestures. */
+.screen-wrap canvas{touch-action:none;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+.touch-controls{z-index:4}
+.touch-controls button{pointer-events:auto;position:relative;z-index:4}
