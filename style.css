@@ -8,3 +8,14 @@ button:focus-visible{outline:3px solid #f0bc5a;outline-offset:2px}#world:focus-v
 @media(max-width:680px){body{padding:15px 10px}.masthead{margin-bottom:13px}.date-chip{display:none}.game-layout{grid-template-columns:1fr}.console-card{padding:8px;border-radius:12px}.dashboard{display:grid;grid-template-columns:1fr 1fr;align-items:start}.day-panel,.needs-panel{grid-column:span 1}.action-panel{grid-column:1/-1;min-height:0}.control-panel{grid-column:1/-1;justify-content:flex-start;gap:24px}.screen-head{font-size:10px}.footer-note{flex-direction:column;gap:3px;margin-top:13px}.action-list{grid-template-columns:1fr 1fr}.overlay-card{padding:13px 12px}.overlay-card p:not(.overlay-kicker):not(.overlay-foot){margin-bottom:8px}.overlay-foot{margin-top:8px}}
 @media(max-width:390px){.dashboard{grid-template-columns:1fr}.day-panel,.needs-panel,.action-panel,.control-panel{grid-column:1}.action-list{grid-template-columns:1fr}.masthead h1{font-size:21px}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+
+/* Phone-first touch controls: they sit on the map so thumbs can move and act without a keyboard. */
+.touch-controls{display:none;position:absolute;inset:0;z-index:2;pointer-events:none}
+.touch-dpad{position:absolute;left:8px;bottom:8px;grid-template-columns:repeat(3,44px);grid-template-rows:repeat(3,42px);gap:2px;pointer-events:auto;touch-action:none}
+.touch-dpad button{width:44px;height:42px;border:1px solid #b8c69a;border-radius:5px;background:#20493fe8;color:#f4edcf;font-size:17px;box-shadow:0 2px 0 #0b2925;touch-action:none;-webkit-tap-highlight-color:transparent}
+.touch-dpad .dpad-center{color:#f1e6c7;font-size:12px}
+.touch-interact{position:absolute;right:9px;bottom:12px;width:78px;height:64px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;border:2px solid #773f2e;border-radius:7px;background:#d96d4eeF;color:#fff9e8;font:800 15px var(--font);box-shadow:0 3px 0 #552f26;pointer-events:auto;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.touch-interact span{font-size:9px;font-weight:600}
+.touch-interact:active{transform:translateY(2px);box-shadow:0 1px 0 #552f26}
+@media(max-width:680px){body{padding:calc(10px + env(safe-area-inset-top)) 9px calc(16px + env(safe-area-inset-bottom))}.touch-controls{display:block}.control-panel .dpad{display:none}.control-panel{padding:8px 11px;min-height:52px}.control-copy{font-size:10px}.control-copy strong{font-size:12px}.action-button{min-height:44px;padding:8px 9px;font-size:11px}.pause-button{min-height:36px;padding:7px 10px}.screen-wrap{border-width:3px}.screen-head,.screen-foot{touch-action:pan-y}}
+@media(hover:none) and (pointer:coarse){.touch-controls{display:block}.control-panel .dpad{display:none}.action-button{min-height:44px}.touch-dpad button{width:46px;height:44px}}

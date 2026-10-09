@@ -18,6 +18,7 @@
   const progressNode = document.getElementById('day-progress');
   const startButton = document.getElementById('overlay-button');
   const pauseButton = document.getElementById('pause-button');
+  const touchInteractButton = document.getElementById('touch-interact');
   const held = new Set();
   const images = {};
 
@@ -67,7 +68,7 @@
       overlayCopy.textContent = 'ออกไปใช้ชีวิต ทำกิจวัตร และรักษาความต้องการให้สมดุลก่อนค่ำ';
       overlayStat.textContent = '';
       overlayButton.textContent = 'เริ่มใช้ชีวิต';
-      overlayFoot.textContent = 'เดินด้วยปุ่มลูกศร · ยืนยันกิจกรรมด้วย Enter';
+      overlayFoot.textContent = 'แตะปุ่มทิศทางหรือใช้ลูกศรเดิน · แตะยืนยันเพื่อทำกิจกรรม';
       overlayButton.onclick = startDay;
     } else if (mode === 'paused') {
       overlayTitle.textContent = 'พักหายใจสักครู่';
@@ -169,14 +170,14 @@
       row.setAttribute('aria-label', `${needNames[key]} ${percent}%`);
     }
     if (state.mode !== 'playing') locationStatus.textContent = state.mode === 'title' ? 'พร้อมเริ่มวัน' : state.mode === 'paused' ? 'พักเกมอยู่' : 'หมดวันแล้ว';
-    else locationStatus.textContent = state.nearby ? `ใกล้${state.nearby.name} · กด Enter เพื่อทำกิจกรรม` : 'เดินสำรวจเมืองเพื่อหากิจกรรม';
+    else locationStatus.textContent = state.nearby ? `ใกล้${state.nearby.name} · แตะยืนยันเพื่อทำกิจกรรม` : 'เดินสำรวจเมืองเพื่อหากิจกรรม';
   }
   function updateActionPanel() {
     actionList.replaceChildren();
     const place = state.nearby;
     if (!place || state.mode !== 'playing') {
       actionTitle.textContent = 'กิจกรรมใกล้ตัว';
-      actionHint.textContent = 'เดินเข้าใกล้บ้าน คาเฟ่ ร้านค้า หรือสวน แล้วกด Enter';
+      actionHint.textContent = 'เดินเข้าใกล้สถานที่ แล้วแตะยืนยันหรือเลือกกิจกรรม';
       const labels = [['meal','คาเฟ่'],['work','ร้านค้า'],['rest','บ้าน'],['chat','สวน']];
       for (const [id, placeName] of labels) {
         const button = document.createElement('button'); button.type = 'button'; button.className = 'action-button'; button.disabled = true;
@@ -185,7 +186,7 @@
       return;
     }
     actionTitle.textContent = `ใกล้${place.name}`;
-    actionHint.textContent = place.actions.length > 1 ? 'เลือกกิจกรรมหรือกดปุ่มหมายเลขที่แสดง' : 'กด Enter หรือ 1 เพื่อทำกิจกรรม';
+    actionHint.textContent = place.actions.length > 1 ? 'แตะเลือกกิจกรรม หรือใช้ปุ่มหมายเลข' : 'แตะกิจกรรมหรือปุ่มยืนยันบนแผนที่';
     for (const id of place.actions) {
       const activity = activities[id];
       const button = document.createElement('button'); button.type = 'button'; button.className = 'action-button';
@@ -227,6 +228,7 @@
   function onKeyUp(event) { const key = event.key.length === 1 ? event.key.toLowerCase() : event.key; held.delete(key); }
   window.addEventListener('keydown', onKeyDown); window.addEventListener('keyup', onKeyUp); window.addEventListener('blur', () => held.clear());
   pauseButton.addEventListener('click', pauseDay);
+  if (touchInteractButton) touchInteractButton.addEventListener('click', interact);
   for (const button of document.querySelectorAll('.dpad button[data-key]')) {
     const key = button.dataset.key;
     const down = (event) => { event.preventDefault(); held.add(key); button.classList.add('held'); if (button.setPointerCapture) button.setPointerCapture(event.pointerId); };

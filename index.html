@@ -31,7 +31,15 @@
           <span class="clock-readout" id="clock">07:00</span>
         </div>
         <div class="screen-wrap">
-          <canvas id="world" width="384" height="288" aria-label="แผนที่เมือง ใช้ปุ่มลูกศรหรือ WASD เพื่อเดิน"></canvas>
+          <canvas id="world" width="384" height="288" aria-label="แผนที่เมือง แตะปุ่มทิศทางเพื่อเดินและปุ่มยืนยันเพื่อทำกิจกรรม"></canvas>
+          <div class="touch-controls" aria-label="ปุ่มสัมผัสสำหรับเล่นบนโทรศัพท์">
+            <div class="dpad touch-dpad" aria-label="ปุ่มทิศทาง">
+              <span></span><button type="button" data-key="ArrowUp" aria-label="เดินขึ้น">▲</button><span></span>
+              <button type="button" data-key="ArrowLeft" aria-label="เดินซ้าย">◀</button><span class="dpad-center">+</span><button type="button" data-key="ArrowRight" aria-label="เดินขวา">▶</button>
+              <span></span><button type="button" data-key="ArrowDown" aria-label="เดินลง">▼</button><span></span>
+            </div>
+            <button class="touch-interact" id="touch-interact" type="button" aria-label="ทำกิจกรรม"><strong>ยืนยัน</strong><span>ทำกิจกรรม</span></button>
+          </div>
           <div class="screen-overlay" id="overlay" aria-live="polite">
             <div class="overlay-card" id="overlay-card">
               <p class="overlay-kicker">วันของเรา · 01</p>
